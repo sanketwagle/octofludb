@@ -28,6 +28,7 @@ from octofludb.domain_flu import (
     p_segment_number,
     p_subtype,
     p_constellation,
+    p_motif,
     p_h1_clade,
     p_h3_clade,
     p_internal_gene_clade,
@@ -293,6 +294,11 @@ class Constellation(StrainAttribute):
     class_predicate = P.constellation
 
 
+class Motif(StrainAttribute):
+    typename = "motif"
+    parser = p_motif
+
+
 class GlobalClade(StrainAttribute):
     typename = "global_clade"
     parser = p_global_clade
@@ -537,6 +543,7 @@ allClassifiers: OrderedDict[str, Type[Token]] = OrderedDict(
             Genbank,
             Barcode,
             Constellation,
+            Motif,
             Country,
             Date,
             EpiSeqid,
@@ -544,7 +551,6 @@ allClassifiers: OrderedDict[str, Type[Token]] = OrderedDict(
             Subtype,
             SegmentName,
             SegmentSubtype,
-            Host,
             InternalGene,
             SegmentNumber,
             Strain,
@@ -557,6 +563,7 @@ allClassifiers: OrderedDict[str, Type[Token]] = OrderedDict(
             N2Clade,
             Dnaseq,
             Proseq,
+            Host,
             Unknown,
         ]
         if c.typename is not None

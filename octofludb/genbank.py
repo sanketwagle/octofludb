@@ -131,7 +131,7 @@ def make_gb_meta_triples(
                     date = make_date(val)
                 elif key == "host":
                     host = val
-                elif key == "country":
+                elif key == "country" or key == "geo_loc_name":
                     country = re.sub(":.*", "", val)
                 elif key == "gene":
                     try:

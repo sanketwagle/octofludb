@@ -125,16 +125,24 @@ def addTag(
 
 class HomoList(Interpreter):
     """
-    Interpret a list of items assumed to be of the same type
+    Interpret a list of items assumed to be of the same type if the typename cannot be matched
     """
 
     def cast(self, data: List[str]) -> List[Token]:
+
         for classifier in self.classifiers:
-            if classifier.goodness(data, na_str=self.na_str) > 0.8:
+            if self.field == classifier.typename:
+                log(f"{classifier.typename} has a goodness score of {classifier.goodness(data, na_str=self.na_str)}") #?
                 c = classifier
                 break
         else:
-            c = self.default_classifier
+            for classifier in self.classifiers:
+                if classifier.goodness(data, na_str=self.na_str) > 0.8:
+                    log(f"{classifier.typename} has a goodness score of {classifier.goodness(data, na_str=self.na_str)}") #?
+                    c = classifier
+                    break
+            else:
+                c = self.default_classifier
         return [c(x, field=self.field, na_str=self.na_str) for x in data]
 
     def connect(self) -> Set[Tuple[Node, Node, Node]]:

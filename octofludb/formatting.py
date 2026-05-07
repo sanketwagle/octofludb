@@ -71,6 +71,7 @@ def _make_constellations(rows: List[Tuple[str, str, str]]) -> List[Tuple[str, st
 
     segment_lookup = dict(PB2=0, PB1=1, PA=2, NP=3, M=4, MP=4, NS=5)
 
+    # update parser "p_constellation" if lookup is modified
     clade_lookup = dict(
         pdm="P", LAIV="V", TRIG="T", humanSeasonal="H", classicalSwine="C", avian="A"
     )

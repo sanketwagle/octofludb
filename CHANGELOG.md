@@ -1,3 +1,10 @@
+v1.0.3 [2026-05-07]
+===================
+
+ * Update host parsing to account for variety of hosts for H5N1
+ * Make table parsing preferentially select headings matching a classifier typename
+ * Fix overly robust parsers that were causing excessively high goodness scores
+
 v1.0.2 [2023-11-03]
 ===================
 
