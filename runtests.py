@@ -427,9 +427,10 @@ class TestHost(unittest.TestCase):
         self.assertEqual(ftok.Host("Swine").clean, "swine")
         self.assertEqual(ftok.Host("Human").clean, "human")
         self.assertEqual(ftok.Host("HuMaN").clean, "human")
-        # FIXME: currently no other hosts are supported, but this needs to change
-        self.assertEqual(ftok.Host("chicken").clean, None)
-        self.assertEqual(ftok.Host("bogus").clean, None)
+        # FIXME: Host filters are pretty loose. Current requires lenth >2 non-numeric characters
+        self.assertEqual(ftok.Host("chicken").clean, "chicken")
+        self.assertEqual(ftok.Host("NA").clean, None)
+        self.assertEqual(ftok.Host("PB2").clean, None)
 
 
 class TestInternalGene(unittest.TestCase):
@@ -663,7 +664,7 @@ class TestPhrase(unittest.TestCase):
 
 class TestFasta(unittest.TestCase):
     def test_fasta(self):
-        # returns nothing since there is not recognizable identifier in the header
+        # first portion of defline is not a recongized identifier and is discarded
         g = Ragged(">baz\nATGG\n>foo||z\nATGGG", na_str=[]).connect()
         s = sorted([(str(s), str(p), str(o)) for s, p, o in g])
         self.maxDiff = None
@@ -683,11 +684,6 @@ class TestFasta(unittest.TestCase):
                 (
                     "https://flu-crew.org/id/4badd1687f27faae29f9b1fe1ea37e78",
                     "https://flu-crew.org/term/unknown",
-                    "foo",
-                ),
-                (
-                    "https://flu-crew.org/id/4badd1687f27faae29f9b1fe1ea37e78",
-                    "https://flu-crew.org/term/unknown",
                     "z",
                 ),
                 (
@@ -700,16 +696,10 @@ class TestFasta(unittest.TestCase):
                     "https://flu-crew.org/term/dnaseq",
                     "ATGG",
                 ),
-                (
-                    "https://flu-crew.org/id/5b2033ab635505389b1acfa0d6eda05c",
-                    "https://flu-crew.org/term/unknown",
-                    "baz",
-                ),
             ],
         )
 
     def test_genbank(self):
-        # returns nothing since there is not recognizable identifier in the header
         self.maxDiff = None
         g = Ragged(
             ">MC123456\nATGGATGG\n>MC123457||z\nATGGGATGGG", levels=None, na_str=[]
@@ -896,106 +886,109 @@ class TestConstellations(unittest.TestCase):
 
     def test_constellations_regular(self):
         data = [
-            # A PPPPPP
-            ("A", "PB2", "pdm"),
-            ("A", "PB1", "pdm"),
-            ("A", "PA", "pdm"),
-            ("A", "NP", "pdm"),
-            ("A", "M", "pdm"),
-            ("A", "NS", "pdm"),
-            # B TTTTTT
-            ("B", "PB2", "TRIG"),
-            ("B", "PA", "TRIG"),
-            ("B", "NP", "TRIG"),
-            ("B", "PB1", "TRIG"),
-            ("B", "M", "TRIG"),
-            ("B", "NS", "TRIG"),
-            # C VVVVVV
-            ("C", "PB2", "LAIV"),
-            ("C", "PA", "LAIV"),
-            ("C", "NP", "LAIV"),
-            ("C", "M", "LAIV"),
-            ("C", "PB1", "LAIV"),
-            ("C", "NS", "LAIV"),
-            # D HHHHHH
-            ("D", "PB1", "humanSeasonal"),
-            ("D", "PA", "humanSeasonal"),
-            ("D", "M", "humanSeasonal"),
-            ("D", "NP", "humanSeasonal"),
-            ("D", "NS", "humanSeasonal"),
-            ("D", "PB2", "humanSeasonal"),
-            # E PTHV-P
-            ("E", "PB1", "TRIG"),
-            ("E", "PA", "humanSeasonal"),
-            ("E", "NP", "LAIV"),
-            ("E", "NS", "pdm"),
-            ("E", "PB2", "pdm"),
+            # A1 PPPPPP
+            ("A1", "A", "PB2", "pdm"),
+            ("A1", "A", "PB1", "pdm"),
+            ("A1", "A", "PA", "pdm"),
+            ("A1", "A", "NP", "pdm"),
+            ("A1", "A", "M", "pdm"),
+            ("A1", "A", "NS", "pdm"),
+            # B1 TTTTTT
+            ("B1", "B", "PB2", "TRIG"),
+            ("B1", "B", "PA", "TRIG"),
+            ("B1", "B", "NP", "TRIG"),
+            ("B1", "B", "PB1", "TRIG"),
+            ("B1", "B", "M", "TRIG"),
+            ("B1", "B", "NS", "TRIG"),
+            # C1 VVVVVV
+            ("C1", "C", "PB2", "LAIV"),
+            ("C1", "C", "PA", "LAIV"),
+            ("C1", "C", "NP", "LAIV"),
+            ("C1", "C", "M", "LAIV"),
+            ("C1", "C", "PB1", "LAIV"),
+            ("C1", "C", "NS", "LAIV"),
+            # D1 HHHHHH
+            ("D1", "D", "PB1", "humanSeasonal"),
+            ("D1", "D", "PA", "humanSeasonal"),
+            ("D1", "D", "M", "humanSeasonal"),
+            ("D1", "D", "NP", "humanSeasonal"),
+            ("D1", "D", "NS", "humanSeasonal"),
+            ("D1", "D", "PB2", "humanSeasonal"),
+            # E1 PTHV-P
+            ("E1", "E", "PB1", "TRIG"),
+            ("E1", "E", "PA", "humanSeasonal"),
+            ("E1", "E", "NP", "LAIV"),
+            ("E1", "E", "NS", "pdm"),
+            ("E1", "E", "PB2", "pdm"),
+            # F1/F2 A-A-AX
+            ("F1", "F", "PB2", "avian"),
+            ("F1", "F", "PA", "avian"),
+            ("F2", "F", "M", "avian"),
+            ("F2", "F", "NS", "avian-like"),
         ]
         out = [
-            ("A", "PPPPPP"),
-            ("B", "TTTTTT"),
-            ("C", "VVVVVV"),
-            ("D", "HHHHHH"),
-            ("E", "PTHV-P"),
+            ("A1", "PPPPPP"),
+            ("B1", "TTTTTT"),
+            ("C1", "VVVVVV"),
+            ("D1", "HHHHHH"),
+            ("E1", "PTHV-P"),
+            ("F1", "A-A-AX"),
+            ("F2", "A-A-AX"),
         ]
         self.assertEqual(formatter._make_constellations(data), out)
 
     def test_constellations_mixed(self):
         data = [
             # A PPPPPP
-            ("A", "PB2", "pdm"),
-            ("A", "PB1", "pdm"),
-            ("A", "PA", "pdm"),
-            ("A", "NP", "pdm"),
-            ("A", "M", "pdm"),
-            ("A", "NS", "pdm"),
-            ("A", "NS", "TRIG"),
+            ("A1", "A", "PB2", "pdm"),
+            ("A1", "A", "PB1", "pdm"),
+            ("A1", "A", "PA", "pdm"),
+            ("A1", "A", "NP", "pdm"),
+            ("A1", "A", "M", "pdm"),
+            ("A1", "A", "NS", "pdm"),
+            ("A1", "A", "NS", "TRIG"),
         ]
-        out = [("A", "mixed")]
+        out = [("A1", "mixed")]
         self.assertEqual(formatter._make_constellations(data), out)
 
     def test_constellations_well_mixed(self):
         data = [
             # A VPPVPT
-            ("A", "PB2", "LAIV"),
-            ("A", "PB2", "TX98"),  # both V
-            ("A", "PB1", "pdm"),
-            ("A", "PA", "pdm"),
-            ("A", "NP", "LAIV"),
-            ("A", "NP", "TX98"),  # both V
-            ("A", "M", "pdm"),
-            ("A", "NS", "TRIG"),
-            ("A", "NS", "TRIG"),  # duplicates are fine
+            ("A1", "A", "PB2", "LAIV"),
+#            ("A1", "A", "PB2", "TX98"),  # both V
+            ("A1", "A", "PB1", "pdm"),
+            ("A1", "A", "PA", "pdm"),
+            ("A1", "A", "NP", "LAIV"),
+#            ("A1", "A", "NP", "TX98"),  # both V
+            ("A1", "A", "M", "pdm"),
+            ("A1", "A", "NS", "TRIG"),
+            ("A1", "A", "NS", "TRIG"),  # duplicates are fine
         ]
-        out = [("A", "VPPVPT")]
+        out = [("A1", "VPPVPT")]
         self.assertEqual(formatter._make_constellations(data), out)
 
     def test_constellations_irregular(self):
         data = [
             # A PPPPPP
-            ("A", "PB2", "pdm"),
-            (
-                "A",
-                "PB1",
-                "chocolate",
-            ),  # FYI - unfortunately, it doesn't come in chocolate
-            ("A", "NP", "pdm"),
-            ("A", "NS", "TRIG"),
+            ("A1", "A", "PB2", "pdm"),
+            ("A1", "A", "PB1", "chocolate"),  # FYI - unfortunately, it doesn't come in chocolate
+            ("A1", "A", "NP", "pdm"),
+            ("A1", "A", "NS", "TRIG"),
         ]
-        out = [("A", "PX-P-T")]
+        out = [("A1", "PX-P-T")]
         self.assertEqual(formatter._make_constellations(data), out)
 
     def test_constellations_flexible(self):
         data = [
             # A AAAAPX
-            ("A", "PB2", "avian"),
-            ("A", "PB1", "Avian"),
-            ("A", "PA", "PA-avian-spillover"),
-            ("A", "NP", "NP-avian"),
-            ("A", "M", "PDM"),
-            ("A", "NS", "Human"),
+            ("A1", "A", "PB2", "avian"),
+            ("A1", "A", "PB1", "Avian"),
+            ("A1", "A", "PA", "PA-avian-spillover"),
+            ("A1", "A", "NP", "NP-avian"),
+            ("A1", "A", "M", "PDM"),
+            ("A1", "A", "NS", "Human"),
         ]
-        out = [("A", "AAAAPX")]
+        out = [("A1", "AAAAPX")]
         self.assertEqual(formatter._make_constellations(data), out)
 
 

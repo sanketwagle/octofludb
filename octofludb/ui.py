@@ -89,7 +89,7 @@ tag_arg_opt = click.option(
 
 segment_key_opt = click.option(
     "--segment-key",
-    help="Treat the first column as a segment identifier. This is necessary for irregular segment identifiers (such as sequence checksums), for genbank or epiflu IDs, not special actio is needed, since octofludb will automatically recognize them.",
+    help="Treat the first column as a segment identifier. This is necessary for irregular segment identifiers (such as sequence checksums), for genbank or epiflu IDs, no special action is needed, since octofludb will automatically recognize them.",
     is_flag=True,
     default=False,
 )
@@ -248,7 +248,7 @@ def upload_classifications(url: str, repo: str) -> List[str]:
         make_const(url=url, repo=repo, outfile=constout)
 
     with open(constellation_turtles, "w") as turtleout:
-        prep_table(constellation_table, outfile=turtleout)
+        prep_table(constellation_table, outfile=turtleout, segment_key=True)
 
     uploaded_constellations = upload([constellation_turtles], url=url, repo=repo)
 
@@ -258,36 +258,16 @@ def upload_classifications(url: str, repo: str) -> List[str]:
 def upload_subtypes(url: str, repo: str) -> List[str]:
 
     # infer subtypes
-    subtypes_table = "subtypes.txt"
+    subtypes_table ="subtypes.txt"
+    subtypes_turtles = "subtypes.ttl"
+
     with open(subtypes_table, "w") as subtypesout:
         make_subtypes(url=url, repo=repo, outfile=subtypesout)
 
-    # The subtype table needs to be split into genbank and epiflu tables to
-    # ensure proper inference of strain name versus isolate id types.
-    genbank_subtypes = "subtypes-genbank.txt"
-    epiflu_subtypes = "subtypes-epiflu.txt"
-    with open(subtypes_table, "r") as subtypesin:
-        with open(genbank_subtypes, "w") as gh:
-            print("strain_name\tsubtype", file=gh)
-            with open(epiflu_subtypes, "w") as eh:
-                print("isolate_id\tsubtype", file=eh)
-                # the subtypes.txt file has a header which needs to be skipped
-                for row in subtypesin.read().splitlines()[1:]:
-                    if "EPI_ISL" in row:
-                        print(row, file=eh)
-                    else:
-                        print(row, file=gh)
-                eh.flush()
-            gh.flush()
+    with open(subtypes_turtles, "w") as turtleout:
+        prep_table(filename=subtypes_table, outfile=turtleout, segment_key=True)
 
-    gturtles = "subtypes-genbank.ttl"
-    eturtles = "subtypes-epiflu.ttl"
-    with open(gturtles, "w") as gturtleout:
-        prep_table(filename=genbank_subtypes, outfile=gturtleout, segment_key="strain_name")
-    with open(eturtles, "w") as eturtleout:
-        prep_table(filename=epiflu_subtypes, outfile=eturtleout, segment_key="isolate_id")
-
-    return upload([gturtles, eturtles], url=url, repo=repo)
+    return upload([subtypes_turtles], url=url, repo=repo)
 
 
 def upload_motifs(url: str, repo: str) -> List[str]:
@@ -842,7 +822,7 @@ def prep_table(
     exclude: Optional[str] = None,
     levels: Optional[str] = None,
     na: Optional[str] = None,
-    segment_key: Optional[str] = None,
+    segment_key: Optional[bool] = False,
     outfile: TextIO = sys.stdout,
 ) -> None:
     """
@@ -854,7 +834,7 @@ def prep_table(
     (inc, exc, levelsProc) = process_tablelike(include, exclude, levels)
 
     def _mk_table_cmd(fh: TextIO) -> Set[Tuple[Node, Node, Node]]:
-        if segment_key is None:
+        if segment_key is True:
             return IrregularSegmentTable(
                 text=fh,
                 tag=tag,
@@ -1044,8 +1024,9 @@ def make_const(url: str, repo: str, outfile: TextIO = sys.stdout) -> None:
 
 def make_subtypes(url: str, repo: str, outfile: TextIO = sys.stdout) -> None:
     strains, isolates = get_missing_subtypes(url, repo)
-    print("strain_name\tsubtype", file=outfile)
-    for identifier, subtype in strains + isolates:
+    # first field (strain_id) is considered an identifier automatically and will not be parsed/cleaned
+    print("strain_id\tsubtype", file=outfile)
+    for identifier, subtype in strains:
         print(f"{identifier}\t{subtype}", file=outfile)
 
 

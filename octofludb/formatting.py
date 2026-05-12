@@ -55,19 +55,20 @@ def write_constellations(results: dict, outfile: TextIO = sys.stdout) -> None:
 
     consts = _make_constellations(rows)
 
-    print("strain_name\tconstellation", file=outfile)
-    for (strain, const) in consts:
-        print(f"{strain}\t{const}", file=outfile)
+    # first field (strain_id) is considered an identifier automatically and will not be parsed/cleaned
+    print("strain_id\tconstellation", file=outfile)
+    for (sid, const) in consts:
+        print(f"{sid}\t{const}", file=outfile)
 
 
-def _parse_constellation_query(results: dict) -> List[Tuple[str, str, str]]:
+def _parse_constellation_query(results: dict) -> List[Tuple[str, str, str, str]]:
     return [
-        (row["strain"]["value"], row["segment"]["value"], row["clade"]["value"])
+        (row["sid"]["value"], row["strain"]["value"], row["segment"]["value"], row["clade"]["value"])
         for row in results["results"]["bindings"]
     ]
 
 
-def _make_constellations(rows: List[Tuple[str, str, str]]) -> List[Tuple[str, str]]:
+def _make_constellations(rows: List[Tuple[str, str, str, str]]) -> List[Tuple[str, str]]:
 
     segment_lookup = dict(PB2=0, PB1=1, PA=2, NP=3, M=4, MP=4, NS=5)
 
@@ -76,8 +77,10 @@ def _make_constellations(rows: List[Tuple[str, str, str]]) -> List[Tuple[str, st
         pdm="P", LAIV="V", TRIG="T", humanSeasonal="H", classicalSwine="C", avian="A"
     )
 
+    sid_strain_di = {sid: strain for (sid, strain, segment, clade) in rows}
+
     const: Dict[str, List[str]] = dict()
-    for (strain, segment, clade) in rows:
+    for (sid, strain, segment, clade) in rows:
 
         if strain not in const:
             const[strain] = list("------")
@@ -118,9 +121,10 @@ def _make_constellations(rows: List[Tuple[str, str, str]]) -> List[Tuple[str, st
             const[strain][index] = "M"  # conflicting internal gene clades, this means the strain is probably mixed
 
     output_rows = []
-    for (k, c) in const.items():
+    for sid, strain in sid_strain_di.items():
+        c = const[strain]
         if "M" in c:
-            output_rows.append((k, "mixed"))
+            output_rows.append((sid, "mixed"))
         else:
-            output_rows.append((k, "".join(c)))
+            output_rows.append((sid, "".join(c)))
     return output_rows

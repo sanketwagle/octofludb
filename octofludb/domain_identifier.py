@@ -20,6 +20,8 @@ def clean_strain(x):
 p_strain_no_paren = p.regex("[ABCD]/[^/()\[\]]+/.+").parsecmap(clean_strain)
 p_strain_paren = p.regex("\([ABCD]/[^/()\[\]]+/.+\)").parsecmap(clean_strain)
 p_strain = p_strain_paren ^ p_strain_no_paren
+#from octofludb.nomenclature import ni
+#p_strain_id = p.regex(f".*{str(ni)}(a%2F|epi_isl_).*")
 
 p_barcode = p_A0 ^ p_tosu ^ p_epi_isolate ^ p_strain  # e.g. A01104095 or 16TOSU4783
 p_gb = p.regex("[A-Z][A-Z]?\d{5,7}")

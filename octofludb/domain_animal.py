@@ -15,7 +15,11 @@ def clean_host(x):
     elif "sapiens" in x:
         x = "human"
     # cannot contain digits
-    x = re.findall("^[^0-9]+$|$", x)[0]
+    x = re.findall("^[^0-9]{3,}$|$", x)[0]
+    # avoid matching clades
+    bad_match = re.findall("(alpha|beta|^C?_?IV|classical|gamma|seasonal|other|LAIV|pandemic|pdm|TRIG)", x, re.IGNORECASE)
+    if len(bad_match) > 0:
+        x = None
     x = None if x == "" else x
     return x
 

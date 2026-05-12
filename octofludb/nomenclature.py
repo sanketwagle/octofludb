@@ -61,6 +61,10 @@ def make_uri(x, namespace=ni) -> Optional[Node]:
         return None
     if isinstance(x, rdflib.term.URIRef):
         return x
+    elif str(ni) in x:
+        #x = re.findall(f".*{str(ni)}([^>]*)|$", x)[0]
+        x = re.findall("[^\<\>]+|$", x)[0]
+        return rdflib.term.URIRef(x)
     else:
         x = re.sub("[ -]+", "_", x.strip()).lower()
         return namespace.term(url.quote_plus(x))

@@ -2,6 +2,7 @@ PREFIX f: <https://flu-crew.org/term/>
 PREFIX onto: <http://www.ontotext.com/>
 
 SELECT DISTINCT
+    ?sid
     ?strain_name
     (GROUP_CONCAT(DISTINCT ?isolate; separator="+") as ?isolates)
     ?segment_name
@@ -23,4 +24,4 @@ WHERE {
     OPTIONAL { ?gid f:has_feature/f:serotype ?genbank_subtype . }
     OPTIONAL { ?sid f:gisaid_subtype ?gisaid_subtype . }
 }
-GROUP BY ?strain_name ?segment_name
+GROUP BY ?sid ?strain_name ?segment_name

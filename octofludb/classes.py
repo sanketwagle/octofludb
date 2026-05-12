@@ -131,7 +131,7 @@ class HomoList(Interpreter):
     def cast(self, data: List[str]) -> List[Token]:
 
         for classifier in self.classifiers:
-            if self.field == classifier.typename:
+            if str(self.field).lower() == classifier.typename:
                 log(f"{classifier.typename} has a goodness score of {classifier.goodness(data, na_str=self.na_str)}") #?
                 c = classifier
                 break
@@ -246,7 +246,13 @@ class Table(ParsedPhraseList):
         self.header: List[str] = []
         super().__init__(*args, **kwargs)
 
-    def cast(self, data: Dict[str, List[Optional[str]]]) -> List[Phrase]:
+    def cast(self, data: Dict[str, List[Optional[str]]], segment_key=False) -> List[Phrase]:
+        """
+        Control header case to interact with STRAIN_FIELDS filter.
+        - True: sets header to uppercase and disables STRAIN_FIELDS filter
+        - False: sets header to lowercase and enables STRAIN_FIELDS filter
+        """
+        data = { (x.upper() if segment_key else x.lower()):y for x, y in data.items() } 
         return tabularTyping(data, levels=self.levels, na_str=self.na_str)
 
     def parse(self, text: Union[str, TextIO]) -> Dict[str, List[Optional[str]]]:

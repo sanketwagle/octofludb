@@ -174,6 +174,7 @@ STRAIN_FIELDS = {
     "host",
     "global_clade",
     "subtype",
+    "constellation",
     "barcode",
     "strain_name",
     "gisaid_strain_name",

@@ -341,9 +341,9 @@ def mk_subtypes(
     entries: dict = dict()
 
     for row in results["results"]["bindings"]:
-        strain = row["strain_name"]["value"]
+        sid = row["sid"]["value"]
 
-        if strain not in entries:
+        if sid not in entries:
             entry: dict = dict(
                 isolates=set(),
                 ha_subtypes=[],
@@ -352,7 +352,7 @@ def mk_subtypes(
                 serotypes=[],
             )
         else:
-            entry = entries[strain]
+            entry = entries[sid]
 
         entry["isolates"].update([i for i in row["isolates"]["value"].split("+") if i])
 
@@ -367,24 +367,24 @@ def mk_subtypes(
             elif re.fullmatch("N\d+", segment_subtype):
                 append_add(entry, "na_subtypes", [segment_subtype])
 
-        entries[strain] = entry
+        entries[sid] = entry
 
-    strain_entries = []
+    sid_entries = []
     isolate_entries = []
-    for strain, entry in entries.items():
+    for sid, entry in entries.items():
         subtype = _get_subtype(
-            strain,
+            sid,
             has=entry["ha_subtypes"],
             nas=entry["na_subtypes"],
             gisaid_subtypes=entry["gisaid_subtypes"],
             genbank_subtypes=entry["genbank_subtypes"],
         )
         if subtype is not None:
-            strain_entries.append((strain, subtype))
+            sid_entries.append((sid, subtype))
             for isolate in entry["isolates"]:
                 isolate_entries.append((isolate, subtype))
 
-    return (strain_entries, isolate_entries)
+    return (sid_entries, isolate_entries)
 
 
 MASTERLIST_HEADER: List[str] = [
@@ -567,7 +567,7 @@ class IrregularSegmentTable(classes.Table):
             del data[self.header[0]]
         except IndexError:
             die("Tables must have header lines and at least 1 column")
-        phrases = super().cast(data)
+        phrases = super().cast(data, segment_key=True)
         for i in range(len(segment_ids)):
             phrases[i].tokens.append(IrregularSegment(segment_ids[i]))
         return phrases

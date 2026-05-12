@@ -17,7 +17,7 @@ p_internal_gene = p.regex("PB2|PB1|PA|NP") ^ p_ns ^ p_m
 
 p_segment = p_internal_gene ^ p.string("HA") ^ p.string("NA")
 p_constellation = p.regex("[PVTHCAX-]{6}|MIXED|mixed")
-p_motif = p.regex(re.compile("[ACDEFGHIKL_MNPQRSTVWX*Y-]{4,9}", re.IGNORECASE))
+p_motif = p.regex(re.compile("^(?=.*[^ATGC].*)[ACDEFGHIKL_MNPQRSTVWX*Y-]{4,9}$", re.IGNORECASE))
 p_segment_number = p.regex("[1-8]")
 p_segment_subtype = p_segment ^ p_HA ^ p_NA
 

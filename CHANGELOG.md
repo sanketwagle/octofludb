@@ -1,3 +1,11 @@
+v1.0.4 [2026-05-11]
+===================
+
+ * Fix `prep table --segment-key`
+ * Update subtype and constellation make/write functions to use strain ID to construct
+   corresponding turtle file. Previously, strain name was used to derive strain ID, which
+   fails when the original strain name is altered.
+
 v1.0.3 [2026-05-07]
 ===================
 
