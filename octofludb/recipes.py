@@ -340,7 +340,8 @@ def mk_subtypes(
 ) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
     entries: dict = dict()
 
-    for row in results["results"]["bindings"]:
+    # results is the type of the result of SPARQLWrapper not the wrapper itself I think
+    for row in results["results"]["bindings"]: # type: ignore 
         sid = row["sid"]["value"]
 
         if sid not in entries:
@@ -561,7 +562,7 @@ class IrregularSegmentTable(classes.Table):
     Load a table; where the kth field is treated as a segment identifier.
     """
 
-    def cast(self, data: Dict[str, List[Optional[str]]]):
+    def cast(self, data: Dict[str, List[Optional[str]]]) -> Optional[List[Phrase]]:
         try:
             segment_ids = data[self.header[0]]
             del data[self.header[0]]

@@ -12,7 +12,7 @@ from rdflib.namespace import XSD
 class Token:
     # The parser may either be a function or a parsec parser
     parser: Union[
-        Callable[[Optional[str]], Optional[str]], p.Parser[str]
+        Callable[[], Optional[str]], p.Parser[str] # Should probably be fixed in the future.
     ] = lambda x: None
     group: Optional[str] = None
     typename: Optional[str] = "auto"

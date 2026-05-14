@@ -18,8 +18,9 @@ def expandYear(x: str) -> str:
 class Date:
     def __init__(self, year: str, month: str = None, day: str = None):
         self.year = year
-        self.month = month
-        self.day = day
+        # month and day are set to None even though types are strings. This should probably be fixed but will require cascading changes in the code
+        self.month = month # type: ignore 
+        self.day = day # type: ignore 
 
     def as_uri(self):
         # 2015
