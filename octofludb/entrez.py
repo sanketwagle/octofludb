@@ -20,7 +20,7 @@ import json
 # Quickfix to read input from a config file
 with open("config.json","r") as configfile:
     config = json.load(configfile)
-    Entrez.email = config.email # type: ignore
+    Entrez.email = config['email'] # type: ignore
 
 
 def get_all_acc_in_db(
